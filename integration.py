@@ -1,3 +1,7 @@
+import subprocess
+import requests
+
+
 TSURU_HOST = "http://localhost:8888"
 
 
