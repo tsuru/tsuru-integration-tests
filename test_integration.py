@@ -2,7 +2,7 @@ import unittest
 import json
 from mock import patch
 from collections import namedtuple
-from integration import create_app, remove_app
+from integration import create_app, remove_app, deploy
 
 
 class IntegrationTestCase(unittest.TestCase):
@@ -37,6 +37,12 @@ class IntegrationTestCase(unittest.TestCase):
         remove_app()
         url = delete.call_args[0][0]
         self.assertEqual("http://localhost:8888/apps/integration", url)
+
+    @patch("subprocess.call")
+    def test_deploy_should_call_git_push_with_right_remote(self, call):
+        deploy()
+        remote = "git@localhost:integration.git"
+        self.assertListEqual(["git", "push", remote, "master"], call.call_args[0][0])
 
 
 if __name__ == "__main__":
