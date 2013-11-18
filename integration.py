@@ -18,7 +18,7 @@ def create_app():
 
 def remove_app():
     url = "{0}/apps/{1}".format(TSURU_URL, APP_NAME)
-    response = requests.delete(url)
+    return requests.delete(url).text
 
 
 def deploy():
