@@ -9,6 +9,8 @@ TSURU_HOST = os.environ.get("TSURU_HOST", "localhost")
 TSURU_PORT = os.environ.get("TSURU_PORT", "8888")
 TSURU_URL = "http://{0}:{1}".format(TSURU_HOST, TSURU_PORT)
 APP_NAME = "integration"
+USER = "tester@globo.com"
+PASSWORD = "123456"
 
 
 def create_app():
@@ -23,17 +25,18 @@ def remove_app():
 
 
 def deploy():
-    remote = "git@{0}:{1}.git".format(GANDALF_HOST, APP_NAME)
+    # need an app to deploy
+    remote = "git@{0}:{1}.git".format(GANDALF_HOST, APP_NAME) # use returned remote
     subprocess.call(["git", "push", remote, "master"])
 
 
-def verify():
-    url = "http://{0}:{1}.git".format(GANDALF_HOST, APP_NAME)
-    response = requests.get(url)
+def create_user():
+    url = "{0}/users".format(TSURU_URL)
+    data = {"email": USER, "password": PASSWORD}
+    requests.post(url, json.dumps(data))
 
 
 def main():
     create_app()
     deploy()
-    verify()
     remove_app()

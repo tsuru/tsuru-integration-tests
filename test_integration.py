@@ -2,10 +2,10 @@ import unittest
 import json
 from mock import patch
 from collections import namedtuple
-from integration import create_app, remove_app, deploy
+from integration import create_app, remove_app, deploy, create_user
 
 
-class IntegrationTestCase(unittest.TestCase):
+class AppIntegrationTestCase(unittest.TestCase):
 
     @patch("requests.post")
     def test_create_app_should_post_and_repass_message(self, post):
@@ -43,6 +43,22 @@ class IntegrationTestCase(unittest.TestCase):
         deploy()
         remote = "git@localhost:integration.git"
         self.assertListEqual(["git", "push", remote, "master"], call.call_args[0][0])
+
+
+class UserIntegrationTestCase(unittest.TestCase):
+
+    @patch("requests.post")
+    def test_create_user_should_post_to_right_url(self, post):
+        create_user()
+        url = post.call_args[0][0]
+        self.assertEqual("http://localhost:8888/users", url)
+
+    @patch("requests.post")
+    def test_create_user_should_pass_correct_json(self, post):
+        create_user()
+        got = json.loads(post.call_args[0][1])
+        expected = {"email": "tester@globo.com", "password": "123456"}
+        self.assertEqual(expected, got)
 
 
 if __name__ == "__main__":
