@@ -2,7 +2,8 @@ import unittest
 import json
 from mock import patch
 from collections import namedtuple
-from integration import create_app, remove_app, deploy, create_user
+from integration import (create_app, remove_app, deploy, create_user,
+                         login)
 
 
 class AppIntegrationTestCase(unittest.TestCase):
@@ -58,6 +59,20 @@ class UserIntegrationTestCase(unittest.TestCase):
         create_user()
         got = json.loads(post.call_args[0][1])
         expected = {"email": "tester@globo.com", "password": "123456"}
+        self.assertEqual(expected, got)
+
+    @patch("requests.post")
+    def test_login_should_post_to_right_url(self, post):
+        login()
+        url = post.call_args[0][0]
+        expected = "http://localhost:8888/users/tester@globo.com/tokens"
+        self.assertEqual(expected, url)
+
+    @patch("requests.post")
+    def test_login_should_post_correct_json(self, post):
+        login()
+        got = json.loads(post.call_args[0][1])
+        expected = {"password": "123456"}
         self.assertEqual(expected, got)
 
 

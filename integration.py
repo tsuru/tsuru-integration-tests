@@ -36,6 +36,12 @@ def create_user():
     requests.post(url, json.dumps(data))
 
 
+def login():
+    url = "{0}/users/{1}/tokens".format(TSURU_URL, USER)
+    data = {"password": PASSWORD}
+    requests.post(url, json.dumps(data))
+
+
 def main():
     create_app()
     deploy()
