@@ -4,7 +4,7 @@ import requests
 import subprocess
 
 
-GANDALF_HOST = os.environ.get("TSURU_HOST", "localhost")
+GANDALF_HOST = os.environ.get("GANDALF_HOST", "localhost")
 TSURU_HOST = os.environ.get("TSURU_HOST", "localhost")
 TSURU_PORT = os.environ.get("TSURU_PORT", "8888")
 TSURU_URL = "http://{0}:{1}".format(TSURU_HOST, TSURU_PORT)
@@ -23,7 +23,7 @@ def remove_app():
 
 
 def deploy():
-    remote = "git@{0}:{1}.git".format(TSURU_HOST, APP_NAME)
+    remote = "git@{0}:{1}.git".format(GANDALF_HOST, APP_NAME)
     subprocess.call(["git", "push", remote, "master"])
 
 
