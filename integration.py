@@ -39,7 +39,11 @@ def create_user():
 def login():
     url = "{0}/users/{1}/tokens".format(TSURU_URL, USER)
     data = {"password": PASSWORD}
-    requests.post(url, json.dumps(data))
+    r = requests.post(url, json.dumps(data))
+    if r.status_code > 201:
+        return ""
+    token = json.loads(r.text)["token"]
+    return token
 
 
 def main():

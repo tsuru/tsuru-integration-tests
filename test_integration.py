@@ -75,6 +75,12 @@ class UserIntegrationTestCase(unittest.TestCase):
         expected = {"password": "123456"}
         self.assertEqual(expected, got)
 
+    @patch("requests.post")
+    def test_login_should_return_token(self, post):
+        post.return_value = namedtuple("Response", ["text", "status_code"])(text='{"token":"abc123"}', status_code=200)
+        self.assertEqual("abc123", login())
+
+
 
 if __name__ == "__main__":
     unittest.main()
