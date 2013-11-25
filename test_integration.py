@@ -58,35 +58,32 @@ class UserIntegrationTestCase(unittest.TestCase):
     @patch("requests.post")
     def test_create_user_should_post_to_right_url(self, post):
         create_user()
-        url = post.call_args[0][0]
-        self.assertEqual("http://localhost:8888/users", url)
+        url = "http://localhost:8888/users"
+        post.assert_called_once_with(url, ANY)
 
     @patch("requests.post")
     def test_create_user_should_pass_correct_json(self, post):
         create_user()
-        got = json.loads(post.call_args[0][1])
-        expected = {"email": "tester@globo.com", "password": "123456"}
-        self.assertEqual(expected, got)
+        expected = json.dumps({"email": "tester@globo.com", "password": "123456"})
+        post.assert_called_once_with(ANY, expected)
 
     @patch("requests.delete")
     def test_remove_user_should_delete_to_right_url(self, delete):
         remove_user()
-        url = delete.call_args[0][0]
-        self.assertEqual("http://localhost:8888/users", url)
+        url = "http://localhost:8888/users"
+        delete.assert_called_once_with(url)
 
     @patch("requests.post")
     def test_login_should_post_to_right_url(self, post):
         login()
-        url = post.call_args[0][0]
-        expected = "http://localhost:8888/users/tester@globo.com/tokens"
-        self.assertEqual(expected, url)
+        url = "http://localhost:8888/users/tester@globo.com/tokens"
+        post.assert_called_once_with(url, ANY)
 
     @patch("requests.post")
     def test_login_should_post_correct_json(self, post):
         login()
-        got = json.loads(post.call_args[0][1])
-        expected = {"password": "123456"}
-        self.assertEqual(expected, got)
+        expected = json.dumps({"password": "123456"})
+        post.assert_called_with(ANY, expected)
 
     @patch("requests.post")
     def test_login_should_return_token(self, post):
