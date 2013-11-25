@@ -19,9 +19,10 @@ def create_app(token):
     return auth_request(requests.post, url, token, data=json.dumps(data)).text
 
 
-def remove_app():
+def remove_app(token):
     url = "{0}/apps/{1}".format(TSURU_URL, APP_NAME)
-    return requests.delete(url).text
+    #return requests.delete(url).text
+    return auth_request(requests.delete, url, token).text
 
 
 def deploy():

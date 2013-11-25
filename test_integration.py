@@ -38,13 +38,18 @@ class AppIntegrationTestCase(unittest.TestCase):
     @patch("requests.delete")
     def test_remove_app_should_delete_and_repass_message(self, delete):
         delete.return_value = namedtuple("Response", ["text"])(text="app removed")
-        r = remove_app()
+        r = remove_app("token123")
         self.assertEqual("app removed", r)
 
     @patch("requests.delete")
     def test_remove_app_should_call_right_url(self, delete):
-        remove_app()
-        delete.assert_called_once_with("http://localhost:8888/apps/integration")
+        remove_app("token123")
+        delete.assert_called_once_with("http://localhost:8888/apps/integration", headers=ANY)
+
+    @patch("integration.auth_request")
+    def test_remove_app_should_pass_token_to_auth_request(self, auth_request):
+        remove_app("token321")
+        auth_request.assert_called_once_with(ANY, ANY, "token321")
 
     @patch("subprocess.call")
     def test_deploy_should_call_git_push_with_right_remote(self, call):
