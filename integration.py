@@ -13,10 +13,10 @@ USER = "tester@globo.com"
 PASSWORD = "123456"
 
 
-def create_app():
+def create_app(token):
     url = "{0}/apps".format(TSURU_URL)
     data = {"name": APP_NAME, "platform": "static"}
-    return auth_request(requests.post, url, "token123", data=json.dumps(data)).text
+    return auth_request(requests.post, url, token, data=json.dumps(data)).text
 
 
 def remove_app():
@@ -55,6 +55,8 @@ def auth_request(method, url, token, **kwargs):
 
 
 def main():
-    create_app()
+    create_user()
+    token = login()
+    create_app(token)
     deploy()
     remove_app()

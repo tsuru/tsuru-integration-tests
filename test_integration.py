@@ -3,8 +3,7 @@ import json
 from mock import patch, ANY
 from collections import namedtuple
 from integration import (create_app, remove_app, deploy, create_user,
-                         login, remove_user, auth_request, TSURU_URL,
-                         APP_NAME)
+                         login, remove_user, auth_request, APP_NAME)
 
 
 class AppIntegrationTestCase(unittest.TestCase):
@@ -12,27 +11,29 @@ class AppIntegrationTestCase(unittest.TestCase):
     @patch("requests.post")
     def test_create_app_should_post_and_repass_message(self, post):
         post.return_value = namedtuple("Response", ["text"])(text="app created")
-        r = create_app()
+        r = create_app("token123")
         self.assertEqual("app created", r)
 
     @patch("requests.post")
     def test_create_app_should_call_correct_url(self, post):
-        create_app()
+        create_app("token123")
         post.assert_called_once_with("http://localhost:8888/apps", headers=ANY, data=ANY)
 
     @patch("requests.post")
     def test_create_app_should_pass_correct_json(self, post):
-        create_app()
+        create_app("token123")
         expected = json.dumps({"name": APP_NAME, "platform": "static"})
         post.assert_called_once_with(ANY, headers=ANY, data=expected)
 
-    @patch("requests.post")
     @patch("integration.auth_request")
-    def test_create_app_should_call_auth_request(self, auth_request, post):
-        url = "{0}/apps".format(TSURU_URL)
-        data = {"name": APP_NAME, "platform": "static"}
-        create_app()
-        auth_request.assert_called_once_with(post, url, "token123", data=json.dumps(data))
+    def test_create_app_should_call_auth_request(self, auth_request):
+        create_app("token123")
+        auth_request.assert_called_once_with(ANY, ANY, ANY, data=ANY)
+
+    @patch("integration.auth_request")
+    def test_create_app_should_pass_token_to_auth_request(self, auth_request):
+        create_app("token321")
+        auth_request.assert_called_once_with(ANY, ANY, "token321", data=ANY)
 
     @patch("requests.delete")
     def test_remove_app_should_delete_and_repass_message(self, delete):
