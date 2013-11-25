@@ -21,7 +21,6 @@ def create_app(token):
 
 def remove_app(token):
     url = "{0}/apps/{1}".format(TSURU_URL, APP_NAME)
-    #return requests.delete(url).text
     return auth_request(requests.delete, url, token).text
 
 
