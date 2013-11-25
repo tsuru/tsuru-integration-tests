@@ -95,11 +95,16 @@ class FakePost(object):
 
 class AuthenticatedRequestTestCase(unittest.TestCase):
 
-    def test_should_add_Authentication_header_to_post_request(self):
+    def test_should_add_Authentication_header_to_request(self):
         post = FakePost()
-        auth_request(post, "test.com")
+        auth_request(post, "test.com", "token321")
         auth = post.headers["Authorization"]
-        self.assertEquals(auth, "token123")
+        self.assertEquals(auth, "token321")
+
+    def test_should_pass_url_to_request(self):
+        post = FakePost()
+        auth_request(post, "test.com", "token123")
+        self.assertEquals("test.com", post.url)
 
 
 if __name__ == "__main__":

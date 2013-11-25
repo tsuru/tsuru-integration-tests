@@ -50,8 +50,8 @@ def login():
     token = json.loads(r.text)["token"]
     return token
 
-def auth_request(method, url, **kwargs):
-    return method(url, headers={"Authorization": "token123"}, **kwargs)
+def auth_request(method, url, token, **kwargs):
+    return method(url, headers={"Authorization": token}, **kwargs)
 
 
 def main():
