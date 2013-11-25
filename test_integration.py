@@ -44,14 +44,13 @@ class AppIntegrationTestCase(unittest.TestCase):
     @patch("requests.delete")
     def test_remove_app_should_call_right_url(self, delete):
         remove_app()
-        url = delete.call_args[0][0]
-        self.assertEqual("http://localhost:8888/apps/integration", url)
+        delete.assert_called_once_with("http://localhost:8888/apps/integration")
 
     @patch("subprocess.call")
     def test_deploy_should_call_git_push_with_right_remote(self, call):
         deploy()
         remote = "git@localhost:integration.git"
-        self.assertListEqual(["git", "push", remote, "master"], call.call_args[0][0])
+        call.assert_called_once_with(["git", "push", remote, "master"])
 
 
 class UserIntegrationTestCase(unittest.TestCase):
