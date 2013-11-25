@@ -1,9 +1,10 @@
+import requests
 import unittest
 import json
 from mock import patch
 from collections import namedtuple
 from integration import (create_app, remove_app, deploy, create_user,
-                         login)
+                         login, remove_user, auth_request)
 
 
 class AppIntegrationTestCase(unittest.TestCase):
@@ -61,6 +62,12 @@ class UserIntegrationTestCase(unittest.TestCase):
         expected = {"email": "tester@globo.com", "password": "123456"}
         self.assertEqual(expected, got)
 
+    @patch("requests.delete")
+    def test_remove_user_should_delete_to_right_url(self, delete):
+        remove_user()
+        url = delete.call_args[0][0]
+        self.assertEqual("http://localhost:8888/users", url)
+
     @patch("requests.post")
     def test_login_should_post_to_right_url(self, post):
         login()
@@ -80,6 +87,19 @@ class UserIntegrationTestCase(unittest.TestCase):
         post.return_value = namedtuple("Response", ["text", "status_code"])(text='{"token":"abc123"}', status_code=200)
         self.assertEqual("abc123", login())
 
+class FakePost(object):
+    def __call__(self, url, headers, **kwargs):
+        self.url = url
+        self.headers = headers
+
+
+class AuthenticatedRequestTestCase(unittest.TestCase):
+
+    def test_should_add_Authentication_header_to_post_request(self):
+        post = FakePost()
+        auth_request(post, "test.com")
+        auth = post.headers["Authorization"]
+        self.assertEquals(auth, "token123")
 
 
 if __name__ == "__main__":

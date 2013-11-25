@@ -36,6 +36,11 @@ def create_user():
     requests.post(url, json.dumps(data))
 
 
+def remove_user():
+    url = "{0}/users".format(TSURU_URL)
+    requests.delete(url)
+
+
 def login():
     url = "{0}/users/{1}/tokens".format(TSURU_URL, USER)
     data = {"password": PASSWORD}
@@ -44,6 +49,9 @@ def login():
         return ""
     token = json.loads(r.text)["token"]
     return token
+
+def auth_request(method, url, **kwargs):
+    return method(url, headers={"Authorization": "token123"}, **kwargs)
 
 
 def main():
