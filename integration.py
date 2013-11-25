@@ -36,9 +36,10 @@ def create_user():
     requests.post(url, json.dumps(data))
 
 
-def remove_user():
+def remove_user(token):
     url = "{0}/users".format(TSURU_URL)
-    requests.delete(url)
+    #requests.delete(url)
+    auth_request(requests.delete, url, token)
 
 
 def login():

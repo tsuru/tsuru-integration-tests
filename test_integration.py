@@ -74,9 +74,14 @@ class UserIntegrationTestCase(unittest.TestCase):
 
     @patch("requests.delete")
     def test_remove_user_should_delete_to_right_url(self, delete):
-        remove_user()
+        remove_user("token123")
         url = "http://localhost:8888/users"
-        delete.assert_called_once_with(url)
+        delete.assert_called_once_with(url, headers=ANY)
+
+    @patch("integration.auth_request")
+    def test_remove_user_should_pass_token_to_auth_request(self, auth_request):
+        remove_user("token321")
+        auth_request.assert_called_once_with(ANY, ANY, "token321")
 
     @patch("requests.post")
     def test_login_should_post_to_right_url(self, post):
