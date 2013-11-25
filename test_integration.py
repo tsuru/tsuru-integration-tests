@@ -1,9 +1,10 @@
 import unittest
 import json
-from mock import patch
+from mock import patch, ANY
 from collections import namedtuple
 from integration import (create_app, remove_app, deploy, create_user,
-                         login, remove_user, auth_request)
+                         login, remove_user, auth_request, TSURU_URL,
+                         APP_NAME)
 
 
 class AppIntegrationTestCase(unittest.TestCase):
@@ -17,15 +18,21 @@ class AppIntegrationTestCase(unittest.TestCase):
     @patch("requests.post")
     def test_create_app_should_call_correct_url(self, post):
         create_app()
-        url = post.call_args[0][0]
-        self.assertEqual("http://localhost:8888/apps", url)
+        post.assert_called_once_with("http://localhost:8888/apps", headers=ANY, data=ANY)
 
     @patch("requests.post")
     def test_create_app_should_pass_correct_json(self, post):
         create_app()
-        got = json.loads(post.call_args[0][1])
-        expected = {"name": "integration", "platform": "static"}
-        self.assertEqual(expected, got)
+        expected = json.dumps({"name": APP_NAME, "platform": "static"})
+        post.assert_called_once_with(ANY, headers=ANY, data=expected)
+
+    @patch("requests.post")
+    @patch("integration.auth_request")
+    def test_create_app_should_call_auth_request(self, auth_request, post):
+        url = "{0}/apps".format(TSURU_URL)
+        data = {"name": APP_NAME, "platform": "static"}
+        create_app()
+        auth_request.assert_called_once_with(post, url, "token123", data=json.dumps(data))
 
     @patch("requests.delete")
     def test_remove_app_should_delete_and_repass_message(self, delete):
@@ -90,6 +97,7 @@ class FakePost(object):
     def __call__(self, url, headers, **kwargs):
         self.url = url
         self.headers = headers
+        self.kwargs = kwargs
 
 
 class AuthenticatedRequestTestCase(unittest.TestCase):
@@ -104,6 +112,11 @@ class AuthenticatedRequestTestCase(unittest.TestCase):
         post = FakePost()
         auth_request(post, "test.com", "token123")
         self.assertEquals("test.com", post.url)
+
+    def test_should_pass_kwargs_to_request(self):
+        post = FakePost()
+        auth_request(post, "test.com", "token123", test="foo", bar="test")
+        self.assertDictEqual({"test":"foo", "bar":"test"}, post.kwargs)
 
 
 if __name__ == "__main__":
