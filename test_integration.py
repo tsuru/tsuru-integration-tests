@@ -1,4 +1,3 @@
-import requests
 import unittest
 import json
 from mock import patch
