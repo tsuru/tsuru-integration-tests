@@ -4,7 +4,7 @@ from mock import patch, ANY
 from collections import namedtuple
 from integration import (create_app, remove_app, deploy, create_user,
                          login, remove_user, auth_request, APP_NAME,
-                         _clone_repository)
+                         _clone_repository, _push_repository)
 
 
 class AppIntegrationTestCase(unittest.TestCase):
@@ -135,6 +135,12 @@ class DeployTestCase(unittest.TestCase):
         dst = "/tmp"
         _clone_repository(repo, dst)
         call.assert_called_once_with(["git", "clone", repo, dst])
+
+    @patch("subprocess.call")
+    def test_push_repository_should_call_git_push(self, call):
+        remote = "git@git.tsuru.io:user/repo.git"
+        _push_repository(remote, "/tmp/repo/.git")
+        call.assert_called_once_with(["git", "--git-dir=/tmp/repo/.git", "push", remote, "master"])
 
 
 if __name__ == "__main__":

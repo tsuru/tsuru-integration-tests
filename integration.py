@@ -28,6 +28,10 @@ def _clone_repository(repository, dst):
     subprocess.call(["git", "clone", repository, dst])
 
 
+def _push_repository(remote, git_dir):
+    subprocess.call(["git", "--git-dir={0}".format(git_dir), "push", remote, "master"])
+
+
 def deploy():
     # need an app to deploy
     remote = "git@{0}:{1}.git".format(GANDALF_HOST, APP_NAME) # use returned remote
