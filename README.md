@@ -1,3 +1,5 @@
+[![Build Status](https://api.travis-ci.org/andrewsmedina/tsuru-integration-tests.png)](https://api.travis-ci.org/andrewsmedina/tsuru-integration-tests.png)
+
 tsuru-integration-tests
 =======================
 
