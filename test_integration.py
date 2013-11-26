@@ -132,8 +132,9 @@ class DeployTestCase(unittest.TestCase):
     @patch("subprocess.call")
     def test_clone_repository_should_call_git_clone(self, call):
         repo = "git@github.com/user/repo.git"
-        _clone_repository(repo)
-        call.assert_called_once_with(["git", "clone", repo])
+        dst = "/tmp"
+        _clone_repository(repo, dst)
+        call.assert_called_once_with(["git", "clone", repo, dst])
 
 
 if __name__ == "__main__":

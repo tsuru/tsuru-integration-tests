@@ -24,8 +24,8 @@ def remove_app(token):
     return auth_request(requests.delete, url, token).text
 
 
-def _clone_repository(repository):
-    subprocess.call(["git", "clone", repository])
+def _clone_repository(repository, dst):
+    subprocess.call(["git", "clone", repository, dst])
 
 
 def deploy():
