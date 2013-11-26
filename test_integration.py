@@ -3,7 +3,8 @@ import json
 from mock import patch, ANY
 from collections import namedtuple
 from integration import (create_app, remove_app, deploy, create_user,
-                         login, remove_user, auth_request, APP_NAME)
+                         login, remove_user, auth_request, APP_NAME,
+                         _clone_repository)
 
 
 class AppIntegrationTestCase(unittest.TestCase):
@@ -124,6 +125,15 @@ class AuthenticatedRequestTestCase(unittest.TestCase):
         post = FakePost()
         auth_request(post, "test.com", "token123", test="foo", bar="test")
         self.assertDictEqual({"test":"foo", "bar":"test"}, post.kwargs)
+
+
+class DeployTestCase(unittest.TestCase):
+
+    @patch("subprocess.call")
+    def test_clone_repository_should_call_git_clone(self, call):
+        repo = "git@github.com/user/repo.git"
+        _clone_repository(repo)
+        call.assert_called_once_with(["git", "clone", repo])
 
 
 if __name__ == "__main__":

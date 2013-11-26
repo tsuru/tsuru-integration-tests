@@ -24,6 +24,10 @@ def remove_app(token):
     return auth_request(requests.delete, url, token).text
 
 
+def _clone_repository(repository):
+    subprocess.call(["git", "clone", repository])
+
+
 def deploy():
     # need an app to deploy
     remote = "git@{0}:{1}.git".format(GANDALF_HOST, APP_NAME) # use returned remote
