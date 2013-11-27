@@ -28,7 +28,7 @@ class AppIntegrationTestCase(unittest.TestCase):
     @patch("requests.post")
     def test_create_app_should_call_correct_url(self, post):
         create_app("token123")
-        post.assert_called_once_with("http://localhost:8888/apps", headers=ANY, data=ANY)
+        post.assert_called_once_with("http://localhost:8080/apps", headers=ANY, data=ANY)
 
     @patch("requests.post")
     def test_create_app_should_pass_correct_json(self, post):
@@ -50,7 +50,7 @@ class AppIntegrationTestCase(unittest.TestCase):
     def test_remove_app_should_call_right_url(self, delete):
         delete.return_value = namedtuple("Response", ["text"])(text="app removed")
         remove_app("token123")
-        delete.assert_called_once_with("http://localhost:8888/apps/integration", headers=ANY)
+        delete.assert_called_once_with("http://localhost:8080/apps/integration", headers=ANY)
 
     @patch("integration.auth_request")
     def test_remove_app_should_pass_token_to_auth_request(self, auth_request):
@@ -64,7 +64,7 @@ class UserIntegrationTestCase(unittest.TestCase):
     @patch("requests.post")
     def test_create_user_should_post_to_right_url(self, post):
         create_user()
-        url = "http://localhost:8888/users"
+        url = "http://localhost:8080/users"
         post.assert_called_once_with(url, ANY)
 
     @patch("requests.post")
@@ -76,7 +76,7 @@ class UserIntegrationTestCase(unittest.TestCase):
     @patch("requests.delete")
     def test_remove_user_should_delete_to_right_url(self, delete):
         remove_user("token123")
-        url = "http://localhost:8888/users"
+        url = "http://localhost:8080/users"
         delete.assert_called_once_with(url, headers=ANY)
 
     @patch("integration.auth_request")
@@ -87,7 +87,7 @@ class UserIntegrationTestCase(unittest.TestCase):
     @patch("requests.post")
     def test_login_should_post_to_right_url(self, post):
         login()
-        url = "http://localhost:8888/users/tester@globo.com/tokens"
+        url = "http://localhost:8080/users/tester@globo.com/tokens"
         post.assert_called_once_with(url, ANY)
 
     @patch("requests.post")
@@ -104,7 +104,7 @@ class UserIntegrationTestCase(unittest.TestCase):
     @patch("requests.post")
     def test_add_key_should_call_right_url(self, post):
         add_key("token123")
-        post.assert_called_once_with("http://localhost:8888/users/keys", headers=ANY, data=ANY)
+        post.assert_called_once_with("http://localhost:8080/users/keys", headers=ANY, data=ANY)
 
     @patch("requests.post")
     def test_add_key_should_pass_public_key_from_ssh_dir(self, post):
@@ -122,7 +122,7 @@ class UserIntegrationTestCase(unittest.TestCase):
 
     @patch("requests.delete")
     def test_remove_key_should_call_right_url(self, delete):
-        url = "http://localhost:8888/users/keys"
+        url = "http://localhost:8080/users/keys"
         remove_key("token123")
         delete.assert_called_once_with(url, headers=ANY, data=ANY)
 
@@ -142,7 +142,7 @@ class UserIntegrationTestCase(unittest.TestCase):
 
     @patch("requests.post")
     def test_add_team_should_post_to_right_url(self, post):
-        url = "http://localhost:8888/teams"
+        url = "http://localhost:8080/teams"
         add_team("token123")
         post.assert_called_once_with(url, headers=ANY, data=ANY)
 
@@ -158,7 +158,7 @@ class UserIntegrationTestCase(unittest.TestCase):
 
     @patch("requests.delete")
     def test_remove_team_should_delete_to_right_url(self, delete):
-        url = "http://localhost:8888/teams/testteam"
+        url = "http://localhost:8080/teams/testteam"
         remove_team("token123")
         delete.assert_called_once_with(url, headers=ANY)
 
