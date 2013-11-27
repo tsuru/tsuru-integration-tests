@@ -1,10 +1,12 @@
 import unittest
 import json
-from mock import patch, ANY
+from mock import patch, ANY, call
+from os import path
 from collections import namedtuple
 from integration import (create_app, remove_app, deploy, create_user,
                          login, remove_user, auth_request, APP_NAME,
-                         _clone_repository, _push_repository)
+                         _clone_repository, _push_repository, TEST_REPOSITORY,
+                         add_key, remove_key)
 
 
 class AppIntegrationTestCase(unittest.TestCase):
@@ -102,6 +104,25 @@ class UserIntegrationTestCase(unittest.TestCase):
         post.return_value = namedtuple("Response", ["text", "status_code"])(text='{"token":"abc123"}', status_code=200)
         self.assertEqual("abc123", login())
 
+    @patch("requests.post")
+    def test_add_key_should_call_right_url(self, post):
+        add_key("token123")
+        post.assert_called_once_with("http://localhost:8888/users/keys", headers=ANY, data=ANY)
+
+    @patch("requests.post")
+    def test_add_key_should_pass_public_key_from_ssh_dir(self, post):
+        f = open(path.expanduser("~/.ssh/id_rsa.pub"))
+        key = f.read()
+        f.close()
+        data = json.dumps({"key": key})
+        add_key("token123")
+        post.assert_called_once_with(ANY, headers=ANY, data=data)
+
+    @patch("integration.auth_request")
+    def test_add_key_should_call_auth_request(self, auth_request):
+        add_key("token321")
+        auth_request.assert_called_once_with(ANY, ANY, "token321", data=ANY)
+
 class FakePost(object):
     def __call__(self, url, headers, **kwargs):
         self.url = url
@@ -144,10 +165,16 @@ class DeployTestCase(unittest.TestCase):
         call.assert_called_once_with(["git", "--git-dir=/tmp/repo/.git", "push", remote, "master"])
 
     @patch("subprocess.call")
-    def test_deploy_should_call_git_push_with_remote_from_parameter(self, call):
+    def test_deploy_should_call_git_push_with_remote_from_parameter_and_git_dir(self, call):
         remote = "git@localhost:integration.git"
         deploy(remote)
-        call.assert_called_once_with(["git", "push", remote, "master"])
+        call.assert_called_with(["git", "--git-dir=/tmp/test_app/.git", "push", remote, "master"])
+
+    @patch("subprocess.call")
+    def test_deploy_should_call_clone_repository(self, subp_call):
+        deploy("git@localhost:integration.git")
+        expected = call(["git", "clone", TEST_REPOSITORY, "/tmp/test_app"])
+        self.assertEqual(expected, subp_call.call_args_list[0])
 
 
 if __name__ == "__main__":

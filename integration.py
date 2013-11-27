@@ -10,6 +10,7 @@ TSURU_URL = "http://{0}:{1}".format(TSURU_HOST, TSURU_PORT)
 APP_NAME = "integration"
 USER = "tester@globo.com"
 PASSWORD = "123456"
+TEST_REPOSITORY = "git://github.com/flaviamissi/tsuru-app-sample.git"
 
 
 def create_app(token):
@@ -35,7 +36,8 @@ def _push_repository(remote, git_dir):
 
 
 def deploy(remote):
-    subprocess.call(["git", "push", remote, "master"])
+    _clone_repository(TEST_REPOSITORY, "/tmp/test_app")
+    _push_repository(remote, "/tmp/test_app/.git")
 
 
 def create_user():
@@ -47,6 +49,14 @@ def create_user():
 def remove_user(token):
     url = "{0}/users".format(TSURU_URL)
     auth_request(requests.delete, url, token)
+
+
+def add_key(token):
+    url = "{0}/users/keys".format(TSURU_URL)
+    f = open(os.path.expanduser("~/.ssh/id_rsa.pub"))
+    key = f.read()
+    f.close
+    auth_request(requests.post, url, token, data=json.dumps({"key": key}))
 
 
 def login():
