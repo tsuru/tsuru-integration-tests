@@ -20,7 +20,8 @@ class AppIntegrationTestCase(unittest.TestCase):
 
     @patch("requests.post")
     def test_create_app_should_post_with_error_and_return_empty_repository_url(self, post):
-        post.return_value = namedtuple("Response", ["status_code", "json"])(status_code=500, json=lambda:"")
+        data = {"status":"some error", "repository_url":"git@tsuru.io:repo.git"}
+        post.return_value = namedtuple("Response", ["status_code", "json"])(status_code=500, json=lambda:data)
         r = create_app("token123")
         self.assertEqual("", r)
 

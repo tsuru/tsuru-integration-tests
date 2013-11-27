@@ -18,6 +18,7 @@ def create_app(token):
     data = {"name": APP_NAME, "platform": "static"}
     r = auth_request(requests.post, url, token, data=json.dumps(data))
     if r.status_code != 200:
+        print("Caugth error while creating app: {0}".format(r.json()["status"]))
         return ""
     return r.json()["repository_url"]
 
@@ -94,6 +95,13 @@ def auth_request(method, url, token, **kwargs):
 def main():
     create_user()
     token = login()
-    create_app(token)
-    deploy()
-    remove_app()
+    add_team(token)
+    add_key(token)
+    remote = create_app(token)
+    deploy(remote)
+
+    remove_app(token)
+    remove_team(token)
+    remove_key(token)
+    remove_user(token)
+    print("tests run successfuly")
