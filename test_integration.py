@@ -6,7 +6,7 @@ from collections import namedtuple
 from integration import (create_app, remove_app, deploy, create_user,
                          login, remove_user, auth_request, APP_NAME,
                          _clone_repository, _push_repository, TEST_REPOSITORY,
-                         add_key, remove_key)
+                         add_key, remove_key, add_team)
 
 
 class AppIntegrationTestCase(unittest.TestCase):
@@ -141,6 +141,22 @@ class UserIntegrationTestCase(unittest.TestCase):
     @patch("integration.auth_request")
     def test_remove_key_should_call_auth_request(self, auth_request):
         remove_key("token321")
+        auth_request.assert_called_once_with(ANY, ANY, "token321", data=ANY)
+
+    @patch("requests.post")
+    def test_add_team_should_post_to_right_url(self, post):
+        url = "http://localhost:8888/teams"
+        add_team("token123")
+        post.assert_called_once_with(url, headers=ANY, data=ANY)
+
+    @patch("requests.post")
+    def test_add_team_should_post_team_name_in_body(self, post):
+        add_team("token123")
+        post.assert_called_once_with(ANY, headers=ANY, data=json.dumps({"name": "testteam"}))
+
+    @patch("integration.auth_request")
+    def test_add_team_should_call_auth_request(self, auth_request):
+        add_team("token321")
         auth_request.assert_called_once_with(ANY, ANY, "token321", data=ANY)
 
 class FakePost(object):
