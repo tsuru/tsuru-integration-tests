@@ -44,7 +44,7 @@ def deploy(remote):
 def create_user():
     url = "{0}/users".format(TSURU_URL)
     data = {"email": USER, "password": PASSWORD}
-    requests.post(url, json.dumps(data))
+    print(requests.post(url, json.dumps(data)).text)
 
 
 def remove_user(token):
