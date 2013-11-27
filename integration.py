@@ -75,7 +75,6 @@ def add_team(token):
 
 def remove_team(token):
     url = "{0}/teams/testteam".format(TSURU_URL)
-    #requests.delete(url)
     auth_request(requests.delete, url, token)
 
 
