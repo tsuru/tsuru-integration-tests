@@ -59,12 +59,6 @@ class AppIntegrationTestCase(unittest.TestCase):
         remove_app("token321")
         auth_request.assert_called_once_with(ANY, ANY, "token321")
 
-    @patch("subprocess.call")
-    def test_deploy_should_call_git_push_with_right_remote(self, call):
-        deploy()
-        remote = "git@localhost:integration.git"
-        call.assert_called_once_with(["git", "push", remote, "master"])
-
 
 class UserIntegrationTestCase(unittest.TestCase):
 
@@ -148,6 +142,12 @@ class DeployTestCase(unittest.TestCase):
         remote = "git@git.tsuru.io:user/repo.git"
         _push_repository(remote, "/tmp/repo/.git")
         call.assert_called_once_with(["git", "--git-dir=/tmp/repo/.git", "push", remote, "master"])
+
+    @patch("subprocess.call")
+    def test_deploy_should_call_git_push_with_right_remote(self, call):
+        deploy()
+        remote = "git@localhost:integration.git"
+        call.assert_called_once_with(["git", "push", remote, "master"])
 
 
 if __name__ == "__main__":
