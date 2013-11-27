@@ -5,7 +5,7 @@ import subprocess
 
 
 TSURU_HOST = os.environ.get("TSURU_HOST", "localhost")
-TSURU_PORT = os.environ.get("TSURU_PORT", "8888")
+TSURU_PORT = os.environ.get("TSURU_PORT", "8080")
 TSURU_URL = "http://{0}:{1}".format(TSURU_HOST, TSURU_PORT)
 APP_NAME = "integration"
 USER = "tester@globo.com"
