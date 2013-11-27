@@ -1,7 +1,6 @@
 import unittest
 import json
 from mock import patch, ANY, call
-from os import path
 from collections import namedtuple
 from integration import (create_app, remove_app, deploy, create_user,
                          login, remove_user, auth_request, APP_NAME,
@@ -27,6 +26,7 @@ class AppIntegrationTestCase(unittest.TestCase):
 
     @patch("requests.post")
     def test_create_app_should_call_correct_url(self, post):
+        post.return_value = namedtuple("Response", ["status_code"])(status_code=200)
         create_app("token123")
         post.assert_called_once_with("http://localhost:8080/apps", headers=ANY, data=ANY)
 
@@ -58,6 +58,13 @@ class AppIntegrationTestCase(unittest.TestCase):
         remove_app("token321")
         auth_request.assert_called_once_with(ANY, ANY, "token321")
 
+class FakeFile(object):
+    def __init__(self, key):
+        self.key = key
+    def read(self):
+        return self.key
+    def close(self):
+        return
 
 class UserIntegrationTestCase(unittest.TestCase):
 
@@ -102,41 +109,49 @@ class UserIntegrationTestCase(unittest.TestCase):
         self.assertEqual("abc123", login())
 
     @patch("requests.post")
-    def test_add_key_should_call_right_url(self, post):
+    @patch("__builtin__.open")
+    def test_add_key_should_call_right_url(self, m_open, post):
+        m_open.return_value = FakeFile("mykey")
         add_key("token123")
         post.assert_called_once_with("http://localhost:8080/users/keys", headers=ANY, data=ANY)
 
     @patch("requests.post")
-    def test_add_key_should_pass_public_key_from_ssh_dir(self, post):
-        f = open(path.expanduser("~/.ssh/id_rsa.pub"))
-        key = f.read()
-        f.close()
+    @patch("__builtin__.open")
+    def test_add_key_should_pass_public_key_from_ssh_dir(self, m_open, post):
+        key = "mykey"
+        m_open.return_value = FakeFile(key)
         data = json.dumps({"key": key})
         add_key("token123")
         post.assert_called_once_with(ANY, headers=ANY, data=data)
 
     @patch("integration.auth_request")
-    def test_add_key_should_call_auth_request(self, auth_request):
+    @patch("__builtin__.open")
+    def test_add_key_should_call_auth_request(self, m_open, auth_request):
+        m_open.return_value = FakeFile("mykey")
         add_key("token321")
         auth_request.assert_called_once_with(ANY, ANY, "token321", data=ANY)
 
     @patch("requests.delete")
-    def test_remove_key_should_call_right_url(self, delete):
+    @patch("__builtin__.open")
+    def test_remove_key_should_call_right_url(self, m_open, delete):
+        m_open.return_value = FakeFile("mykey")
         url = "http://localhost:8080/users/keys"
         remove_key("token123")
         delete.assert_called_once_with(url, headers=ANY, data=ANY)
 
     @patch("requests.delete")
-    def test_remove_key_should_pass_public_key_from_ssh_dir(self, delete):
-        f = open(path.expanduser("~/.ssh/id_rsa.pub"))
-        key = f.read()
-        f.close()
+    @patch("__builtin__.open")
+    def test_remove_key_should_pass_public_key_from_ssh_dir(self, m_open, delete):
+        key = "mykey"
+        m_open.return_value = FakeFile(key)
         data = json.dumps({"key": key})
         remove_key("token123")
         delete.assert_called_once_with(ANY, headers=ANY, data=data)
 
     @patch("integration.auth_request")
-    def test_remove_key_should_call_auth_request(self, auth_request):
+    @patch("__builtin__.open")
+    def test_remove_key_should_call_auth_request(self, m_open, auth_request):
+        m_open.return_value = FakeFile("mykey")
         remove_key("token321")
         auth_request.assert_called_once_with(ANY, ANY, "token321", data=ANY)
 
