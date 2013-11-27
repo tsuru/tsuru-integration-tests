@@ -58,9 +58,9 @@ def add_key(token):
         f = open(os.path.expanduser("~/.ssh/id_rsa.pub"))
         key = f.read()
         f.close
+        auth_request(requests.post, url, token, data=json.dumps({"key": key}))
     except IOError:
         print("id_rsa.pub not found, create and run the tests again")
-    auth_request(requests.post, url, token, data=json.dumps({"key": key}))
 
 
 def remove_key(token):
