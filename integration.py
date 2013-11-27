@@ -25,7 +25,7 @@ def create_app(token):
 
 def remove_app(token):
     url = "{0}/apps/{1}".format(TSURU_URL, APP_NAME)
-    return auth_request(requests.delete, url, token).text
+    print(auth_request(requests.delete, url, token).text)
 
 
 def _clone_repository(repository, dst):
