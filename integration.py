@@ -54,9 +54,12 @@ def remove_user(token):
 
 def add_key(token):
     url = "{0}/users/keys".format(TSURU_URL)
-    f = open(os.path.expanduser("~/.ssh/id_rsa.pub"))
-    key = f.read()
-    f.close
+    try:
+        f = open(os.path.expanduser("~/.ssh/id_rsa.pub"))
+        key = f.read()
+        f.close
+    except IOError:
+        print("id_rsa.pub not found, create and run the tests again")
     auth_request(requests.post, url, token, data=json.dumps({"key": key}))
 
 
