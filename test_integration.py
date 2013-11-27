@@ -26,7 +26,8 @@ class AppIntegrationTestCase(unittest.TestCase):
 
     @patch("requests.post")
     def test_create_app_should_call_correct_url(self, post):
-        post.return_value = namedtuple("Response", ["status_code"])(status_code=200)
+        data = {"repository_url":"git@tsuru.io:repo.git"}
+        post.return_value = namedtuple("Response", ["status_code", "json"])(status_code=200, json=lambda:data)
         create_app("token123")
         post.assert_called_once_with("http://localhost:8080/apps", headers=ANY, data=ANY)
 
