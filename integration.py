@@ -16,7 +16,10 @@ PASSWORD = "123456"
 def create_app(token):
     url = "{0}/apps".format(TSURU_URL)
     data = {"name": APP_NAME, "platform": "static"}
-    return auth_request(requests.post, url, token, data=json.dumps(data)).text
+    r = auth_request(requests.post, url, token, data=json.dumps(data))
+    if r.status_code != 200:
+        return ""
+    return r.json()["repository_url"]
 
 
 def remove_app(token):

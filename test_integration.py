@@ -10,10 +10,17 @@ from integration import (create_app, remove_app, deploy, create_user,
 class AppIntegrationTestCase(unittest.TestCase):
 
     @patch("requests.post")
-    def test_create_app_should_post_and_repass_message(self, post):
-        post.return_value = namedtuple("Response", ["text"])(text="app created")
+    def test_create_app_should_post_and_return_app_repository(self, post):
+        data = {"status":"success", "repository_url":"git@tsuru.io:repo.git"}
+        post.return_value = namedtuple("Response", ["status_code", "json"])(status_code=200, json=lambda:data)
         r = create_app("token123")
-        self.assertEqual("app created", r)
+        self.assertEqual("git@tsuru.io:repo.git", r)
+
+    @patch("requests.post")
+    def test_create_app_should_post_with_error_and_return_empty_repository_url(self, post):
+        post.return_value = namedtuple("Response", ["status_code", "json"])(status_code=500, json=lambda:"")
+        r = create_app("token123")
+        self.assertEqual("", r)
 
     @patch("requests.post")
     def test_create_app_should_call_correct_url(self, post):
