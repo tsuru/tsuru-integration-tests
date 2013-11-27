@@ -18,7 +18,7 @@ def create_app(token):
     data = {"name": APP_NAME, "platform": "static"}
     r = auth_request(requests.post, url, token, data=json.dumps(data))
     if r.status_code != 200:
-        print("Caugth error while creating app: {0}".format(r.json()["status"]))
+        print("Caugth error while creating app: {0}".format(r.json()))
         return ""
     return r.json()["repository_url"]
 
