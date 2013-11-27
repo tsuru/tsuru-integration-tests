@@ -59,6 +59,14 @@ def add_key(token):
     auth_request(requests.post, url, token, data=json.dumps({"key": key}))
 
 
+def remove_key(token):
+    url = "{0}/users/keys".format(TSURU_URL)
+    f = open(os.path.expanduser("~/.ssh/id_rsa.pub"))
+    key = f.read()
+    f.close
+    auth_request(requests.delete, url, token, data=json.dumps({"key": key}))
+
+
 def login():
     url = "{0}/users/{1}/tokens".format(TSURU_URL, USER)
     data = {"password": PASSWORD}

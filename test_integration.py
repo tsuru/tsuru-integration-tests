@@ -123,6 +123,26 @@ class UserIntegrationTestCase(unittest.TestCase):
         add_key("token321")
         auth_request.assert_called_once_with(ANY, ANY, "token321", data=ANY)
 
+    @patch("requests.delete")
+    def test_remove_key_should_call_right_url(self, delete):
+        url = "http://localhost:8888/users/keys"
+        remove_key("token123")
+        delete.assert_called_once_with(url, headers=ANY, data=ANY)
+
+    @patch("requests.delete")
+    def test_remove_key_should_pass_public_key_from_ssh_dir(self, delete):
+        f = open(path.expanduser("~/.ssh/id_rsa.pub"))
+        key = f.read()
+        f.close()
+        data = json.dumps({"key": key})
+        remove_key("token123")
+        delete.assert_called_once_with(ANY, headers=ANY, data=data)
+
+    @patch("integration.auth_request")
+    def test_remove_key_should_call_auth_request(self, auth_request):
+        remove_key("token321")
+        auth_request.assert_called_once_with(ANY, ANY, "token321", data=ANY)
+
 class FakePost(object):
     def __call__(self, url, headers, **kwargs):
         self.url = url
