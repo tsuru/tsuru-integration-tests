@@ -72,6 +72,12 @@ def add_team(token):
     auth_request(requests.post, url, token, data=json.dumps({"name": "testteam"}))
 
 
+def remove_team(token):
+    url = "{0}/teams/testteam".format(TSURU_URL)
+    #requests.delete(url)
+    auth_request(requests.delete, url, token)
+
+
 def login():
     url = "{0}/users/{1}/tokens".format(TSURU_URL, USER)
     data = {"password": PASSWORD}
