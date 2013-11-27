@@ -105,3 +105,6 @@ def main():
     remove_key(token)
     remove_user(token)
     print("tests run successfuly")
+
+if __name__ == "__main__":
+    main()
