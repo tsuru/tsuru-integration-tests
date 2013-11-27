@@ -144,9 +144,9 @@ class DeployTestCase(unittest.TestCase):
         call.assert_called_once_with(["git", "--git-dir=/tmp/repo/.git", "push", remote, "master"])
 
     @patch("subprocess.call")
-    def test_deploy_should_call_git_push_with_right_remote(self, call):
-        deploy()
+    def test_deploy_should_call_git_push_with_remote_from_parameter(self, call):
         remote = "git@localhost:integration.git"
+        deploy(remote)
         call.assert_called_once_with(["git", "push", remote, "master"])
 
 

@@ -4,7 +4,6 @@ import requests
 import subprocess
 
 
-GANDALF_HOST = os.environ.get("GANDALF_HOST", "localhost")
 TSURU_HOST = os.environ.get("TSURU_HOST", "localhost")
 TSURU_PORT = os.environ.get("TSURU_PORT", "8888")
 TSURU_URL = "http://{0}:{1}".format(TSURU_HOST, TSURU_PORT)
@@ -35,9 +34,7 @@ def _push_repository(remote, git_dir):
     subprocess.call(["git", "--git-dir={0}".format(git_dir), "push", remote, "master"])
 
 
-def deploy():
-    # need an app to deploy
-    remote = "git@{0}:{1}.git".format(GANDALF_HOST, APP_NAME) # use returned remote
+def deploy(remote):
     subprocess.call(["git", "push", remote, "master"])
 
 
