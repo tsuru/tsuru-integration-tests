@@ -195,7 +195,7 @@ class AuthenticatedRequestTestCase(unittest.TestCase):
         post = FakePost()
         auth_request(post, "test.com", "token321")
         auth = post.headers["Authorization"]
-        self.assertEquals(auth, "token321")
+        self.assertEquals(auth, "bearer token321")
 
     def test_should_pass_url_to_request(self):
         post = FakePost()

@@ -91,7 +91,7 @@ def login():
     return token
 
 def auth_request(method, url, token, **kwargs):
-    return method(url, headers={"Authorization": token}, **kwargs)
+    return method(url, headers={"Authorization": "bearer {0}".format(token)}, **kwargs)
 
 
 def main():
