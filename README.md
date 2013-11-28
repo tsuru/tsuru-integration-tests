@@ -15,8 +15,12 @@ Install
 
     pip install -r requirements.txt
 
-
-Running tests
--------------
+Running the script
+------------------
 
     python integration.py
+
+Running tests of the tests
+--------------------------
+
+    python test_integration.py
