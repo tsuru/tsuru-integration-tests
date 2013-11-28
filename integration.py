@@ -39,6 +39,7 @@ def _push_repository(remote, git_dir):
 def deploy(remote):
     _clone_repository(TEST_REPOSITORY, "/tmp/test_app")
     _push_repository(remote, "/tmp/test_app/.git")
+    subprocess.call(["sudo", "rm", "-r", "/tmp/test_app"])
 
 
 def create_user():

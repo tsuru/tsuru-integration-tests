@@ -224,16 +224,23 @@ class DeployTestCase(unittest.TestCase):
         call.assert_called_once_with(["git", "--git-dir=/tmp/repo/.git", "push", remote, "master"])
 
     @patch("subprocess.call")
-    def test_deploy_should_call_git_push_with_remote_from_parameter_and_git_dir(self, call):
+    def test_deploy_should_call_git_push_with_remote_from_parameter_and_git_dir(self, subp_call):
         remote = "git@localhost:integration.git"
         deploy(remote)
-        call.assert_called_with(["git", "--git-dir=/tmp/test_app/.git", "push", remote, "master"])
+        expected = call(["git", "--git-dir=/tmp/test_app/.git", "push", remote, "master"])
+        self.assertEqual(expected, subp_call.call_args_list[1])
 
     @patch("subprocess.call")
     def test_deploy_should_call_clone_repository(self, subp_call):
         deploy("git@localhost:integration.git")
         expected = call(["git", "clone", TEST_REPOSITORY, "/tmp/test_app"])
         self.assertEqual(expected, subp_call.call_args_list[0])
+
+    @patch("subprocess.call")
+    def test_deploy_should_remove_repository_when_its_done(self, subp_call):
+        deploy("git@localhost:integration.git")
+        expected = call(["sudo", "rm", "-r", "/tmp/test_app"])
+        self.assertEqual(expected, subp_call.call_args_list[2])
 
 
 if __name__ == "__main__":
