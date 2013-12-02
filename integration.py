@@ -41,6 +41,14 @@ def deploy(remote):
     _push_repository(remote, "/tmp/test_app/.git")
     subprocess.call(["sudo", "rm", "-r", "/tmp/test_app"])
 
+def verify():
+    url = "http://{0}.{1}".format(APP_NAME, TSURU_HOST)
+    response = requests.get(url)
+    if response.status_code == 200:
+        print("Application responding successfuly")
+    else:
+        print("Application not responding: {0} - {1}".format(response.status_code, response.text))
+
 
 def create_user():
     url = "{0}/users".format(TSURU_URL)

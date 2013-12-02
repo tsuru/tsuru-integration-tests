@@ -5,7 +5,7 @@ from collections import namedtuple
 from integration import (create_app, remove_app, deploy, create_user,
                          login, remove_user, auth_request, APP_NAME,
                          _clone_repository, _push_repository, TEST_REPOSITORY,
-                         add_key, remove_key, add_team, remove_team)
+                         add_key, remove_key, add_team, remove_team, verify)
 
 
 class AppIntegrationTestCase(unittest.TestCase):
@@ -57,6 +57,12 @@ class AppIntegrationTestCase(unittest.TestCase):
         auth_request.return_value = namedtuple("Response", ["text"])(text="app removed")
         remove_app("token321")
         auth_request.assert_called_once_with(ANY, ANY, "token321")
+
+    @patch("requests.get")
+    def test_verify_should_get_app_url(self, get):
+        get.return_value = namedtuple("Response", ["status_code", "text"])(status_code=200, text="")
+        verify()
+        get.assert_called_once_with("http://integration.localhost")
 
 class FakeFile(object):
     def __init__(self, key):
