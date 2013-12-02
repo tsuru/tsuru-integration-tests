@@ -20,12 +20,14 @@ def create_app(token):
     if r.status_code != 200:
         print("Caugth error while creating app: {0} - {1}".format(r.status_code, r.text))
         return ""
+    print("app created")
     return r.json()["repository_url"]
 
 
 def remove_app(token):
     url = "{0}/apps/{1}".format(TSURU_URL, APP_NAME)
-    print(auth_request(requests.delete, url, token).text)
+    r = auth_request(requests.delete, url, token).text
+    print("remove app: {0}".format(r))
 
 
 def _clone_repository(repository, dst):
@@ -53,12 +55,13 @@ def verify():
 def create_user():
     url = "{0}/users".format(TSURU_URL)
     data = {"email": USER, "password": PASSWORD}
-    print(requests.post(url, json.dumps(data)).text)
+    r = requests.post(url, json.dumps(data)).text
+    print("create user output: {0}".format(r))
 
 
 def remove_user(token):
     url = "{0}/users".format(TSURU_URL)
-    auth_request(requests.delete, url, token)
+    print("remove user output: {0}".format(auth_request(requests.delete, url, token)))
 
 
 def add_key(token):
@@ -68,6 +71,7 @@ def add_key(token):
         key = f.read()
         f.close
         auth_request(requests.post, url, token, data=json.dumps({"key": key}))
+        print("key added")
     except IOError:
         print("id_rsa.pub not found, create and run the tests again")
 
@@ -77,17 +81,20 @@ def remove_key(token):
     f = open(os.path.expanduser("~/.ssh/id_rsa.pub"))
     key = f.read()
     f.close
-    auth_request(requests.delete, url, token, data=json.dumps({"key": key}))
+    r = auth_request(requests.delete, url, token, data=json.dumps({"key": key})).text
+    print("remove key: {0}".format(r))
 
 
 def add_team(token):
     url = "{0}/teams".format(TSURU_URL)
-    auth_request(requests.post, url, token, data=json.dumps({"name": "testteam"}))
+    r = auth_request(requests.post, url, token, data=json.dumps({"name": "testteam"})).text
+    print("add team: {0}".format(r))
 
 
 def remove_team(token):
     url = "{0}/teams/testteam".format(TSURU_URL)
-    auth_request(requests.delete, url, token)
+    r = auth_request(requests.delete, url, token).text
+    print("remove team: {0}".format(r))
 
 
 def login():
