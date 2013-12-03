@@ -133,18 +133,22 @@ def auth_request(method, url, token, **kwargs):
 
 
 def main():
-    create_user()
+    exits = []
+    exits.append(create_user())
     token = login()
-    add_team(token)
-    add_key(token)
+    exits.append(add_team(token))
+    exits.append(add_key(token))
     remote = create_app(token)
-    deploy(remote)
+    exits.append(deploy(remote))
 
     remove_app(token)
     remove_team(token)
     remove_key(token)
     remove_user(token)
-    print("tests run successfuly")
+    if 1 in exits:
+        "Finished with failure!"
+        exit(1)
+    print("Success!")
 
 if __name__ == "__main__":
     main()
