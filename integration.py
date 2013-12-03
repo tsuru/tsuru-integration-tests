@@ -19,29 +19,37 @@ def create_app(token):
     r = auth_request(requests.post, url, token, data=json.dumps(data))
     if r.status_code != 200:
         print("Caugth error while creating app: {0} - {1}".format(r.status_code, r.text))
-        return ""
+        return 1
     print("app created")
     return r.json()["repository_url"]
 
 
 def remove_app(token):
     url = "{0}/apps/{1}".format(TSURU_URL, APP_NAME)
-    r = auth_request(requests.delete, url, token).text
-    print("remove app: {0}".format(r))
+    r = auth_request(requests.delete, url, token)
+    if r.status_code != 200:
+        return 1
+    print("remove app: {0}".format(r.text))
+    return 0
 
 
 def _clone_repository(repository, dst):
-    subprocess.call(["git", "clone", repository, dst])
+    return subprocess.call(["git", "clone", repository, dst])
 
 
 def _push_repository(remote, git_dir):
-    subprocess.call(["git", "--git-dir={0}".format(git_dir), "push", remote, "master"])
+    return subprocess.call(["git", "--git-dir={0}".format(git_dir), "push", remote, "master"])
 
 
 def deploy(remote):
-    _clone_repository(TEST_REPOSITORY, "/tmp/test_app")
-    _push_repository(remote, "/tmp/test_app/.git")
-    subprocess.call(["sudo", "rm", "-r", "/tmp/test_app"])
+    exits = []
+    exits.append(_clone_repository(TEST_REPOSITORY, "/tmp/test_app"))
+    exits.append(_push_repository(remote, "/tmp/test_app/.git"))
+    exits.append(subprocess.call(["sudo", "rm", "-r", "/tmp/test_app"]))
+    if 1 in exits:
+        print("deploy finished with error")
+        return 1
+    return 0
 
 def verify():
     url = "http://{0}.{1}".format(APP_NAME, TSURU_HOST)
@@ -70,10 +78,14 @@ def add_key(token):
         f = open(os.path.expanduser("~/.ssh/id_rsa.pub"))
         key = f.read()
         f.close
-        auth_request(requests.post, url, token, data=json.dumps({"key": key}))
+        code = auth_request(requests.post, url, token, data=json.dumps({"key": key})).status_code
         print("key added")
+        if code != 200:
+            return 1
+        return 0
     except IOError:
         print("id_rsa.pub not found, create and run the tests again")
+        return 1
 
 
 def remove_key(token):
@@ -81,20 +93,30 @@ def remove_key(token):
     f = open(os.path.expanduser("~/.ssh/id_rsa.pub"))
     key = f.read()
     f.close
-    r = auth_request(requests.delete, url, token, data=json.dumps({"key": key})).text
-    print("remove key: {0}".format(r))
+    r = auth_request(requests.delete, url, token, data=json.dumps({"key": key}))
+    if r.status_code != 200:
+        return 1
+    print("remove key: {0}".format(r.text))
+    return 0
 
 
 def add_team(token):
     url = "{0}/teams".format(TSURU_URL)
-    r = auth_request(requests.post, url, token, data=json.dumps({"name": "testteam"})).text
-    print("add team: {0}".format(r))
+    r = auth_request(requests.post, url, token, data=json.dumps({"name": "testteam"}))
+    if r.status_code != 200:
+        return 1
+    print("add team: {0}".format(r.text))
+    return 0
 
 
 def remove_team(token):
     url = "{0}/teams/testteam".format(TSURU_URL)
-    r = auth_request(requests.delete, url, token).text
-    print("remove team: {0}".format(r))
+    r = auth_request(requests.delete, url, token)
+    if r.status_code != 200:
+        print ("error removing team: {0} - {1}".format(r.status_code, r.text))
+        return 1
+    print("success removing team: {0} - {1}".format(r.status_code, r.text))
+    return 0
 
 
 def login():
@@ -102,7 +124,7 @@ def login():
     data = {"password": PASSWORD}
     r = requests.post(url, json.dumps(data))
     if r.status_code > 201:
-        return ""
+        return 1
     token = json.loads(r.text)["token"]
     return token
 

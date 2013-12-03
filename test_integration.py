@@ -1,6 +1,6 @@
 import unittest
 import json
-from mock import patch, ANY, call
+from mock import patch, ANY, call, Mock
 from collections import namedtuple
 from integration import (create_app, remove_app, deploy, create_user,
                          login, remove_user, auth_request, APP_NAME,
@@ -18,10 +18,10 @@ class AppIntegrationTestCase(unittest.TestCase):
         self.assertEqual("git@tsuru.io:repo.git", r)
 
     @patch("requests.post")
-    def test_create_app_should_post_with_error_and_return_empty_repository_url(self, post):
+    def test_create_app_should_post_with_error_and_return_code_1(self, post):
         post.return_value = namedtuple("Response", ["status_code", "text"])(status_code=500, text="some error")
         r = create_app("token123")
-        self.assertEqual("", r)
+        self.assertEqual(1, r)
 
     @patch("requests.post")
     def test_create_app_should_call_correct_url(self, post):
@@ -48,15 +48,27 @@ class AppIntegrationTestCase(unittest.TestCase):
 
     @patch("requests.delete")
     def test_remove_app_should_call_right_url(self, delete):
-        delete.return_value = namedtuple("Response", ["text"])(text="app removed")
+        delete.return_value = namedtuple("Response", ["text", "status_code"])(text="app removed", status_code=200)
         remove_app("token123")
         delete.assert_called_once_with("http://localhost:8080/apps/integration", headers=ANY)
 
     @patch("integration.auth_request")
     def test_remove_app_should_pass_token_to_auth_request(self, auth_request):
-        auth_request.return_value = namedtuple("Response", ["text"])(text="app removed")
+        auth_request.return_value = namedtuple("Response", ["text", "status_code"])(text="", status_code=500)
         remove_app("token321")
         auth_request.assert_called_once_with(ANY, ANY, "token321")
+
+    @patch("requests.delete")
+    def test_remove_app_should_return_status_one_on_error(self, delete):
+        delete.return_value = namedtuple("Response", ["text", "status_code"])(text="", status_code=500)
+        r = remove_app("token123")
+        self.assertEqual(r, 1)
+
+    @patch("requests.delete")
+    def test_remove_app_should_return_status_zero_on_success(self, delete):
+        delete.return_value = namedtuple("Response", ["text", "status_code"])(text="", status_code=200)
+        r = remove_app("token123")
+        self.assertEqual(r, 0)
 
     @patch("requests.get")
     def test_verify_should_get_app_url(self, get):
@@ -115,6 +127,11 @@ class UserIntegrationTestCase(unittest.TestCase):
         self.assertEqual("abc123", login())
 
     @patch("requests.post")
+    def test_login_should_return_status_one_when_login_fails(self, post):
+        post.return_value = namedtuple("Response", ["text", "status_code"])(text="", status_code=400)
+        self.assertEqual(1, login())
+
+    @patch("requests.post")
     @patch("__builtin__.open")
     def test_add_key_should_call_right_url(self, m_open, post):
         m_open.return_value = FakeFile("mykey")
@@ -137,10 +154,34 @@ class UserIntegrationTestCase(unittest.TestCase):
         add_key("token321")
         auth_request.assert_called_once_with(ANY, ANY, "token321", data=ANY)
 
+    @patch("requests.post")
+    @patch("__builtin__.open", side_effect=IOError)
+    def test_add_key_should_return_status_one_on_failure_read(self, m_open, post):
+        post.return_value = namedtuple("Response", ["status_code"])(status_code=200)
+        exit = add_key("token123")
+        self.assertEqual(1, exit)
+
+    @patch("requests.post")
+    @patch("__builtin__.open")
+    def test_add_key_should_return_status_one_on_server_failure(self, m_open, post):
+        post.return_value = namedtuple("Response", ["status_code"])(status_code=500)
+        m_open.return_value = FakeFile("mykey")
+        exit = add_key("token123")
+        self.assertEqual(1, exit)
+
+    @patch("requests.post")
+    @patch("__builtin__.open")
+    def test_add_key_should_return_status_zero_on_success(self, m_open, post):
+        post.return_value = namedtuple("Response", ["status_code"])(status_code=200)
+        m_open.return_value = FakeFile("mykey")
+        exit = add_key("token123")
+        self.assertEqual(0, exit)
+
     @patch("requests.delete")
     @patch("__builtin__.open")
     def test_remove_key_should_call_right_url(self, m_open, delete):
         m_open.return_value = FakeFile("mykey")
+        delete.return_value = namedtuple("Response", ["status_code", "text"])(status_code=200, text="")
         url = "http://localhost:8080/users/keys"
         remove_key("token123")
         delete.assert_called_once_with(url, headers=ANY, data=ANY)
@@ -151,6 +192,7 @@ class UserIntegrationTestCase(unittest.TestCase):
         key = "mykey"
         m_open.return_value = FakeFile(key)
         data = json.dumps({"key": key})
+        delete.return_value = namedtuple("Response", ["status_code", "text"])(status_code=200, text="")
         remove_key("token123")
         delete.assert_called_once_with(ANY, headers=ANY, data=data)
 
@@ -158,8 +200,25 @@ class UserIntegrationTestCase(unittest.TestCase):
     @patch("__builtin__.open")
     def test_remove_key_should_call_auth_request(self, m_open, auth_request):
         m_open.return_value = FakeFile("mykey")
+        auth_request.return_value = namedtuple("Response", ["status_code", "text"])(status_code=200, text="")
         remove_key("token321")
         auth_request.assert_called_once_with(ANY, ANY, "token321", data=ANY)
+
+    @patch("requests.delete")
+    @patch("__builtin__.open")
+    def test_remove_key_should_return_zero_on_success(self, m_open, delete):
+        m_open.return_value = FakeFile("mykey")
+        delete.return_value = namedtuple("Response", ["status_code", "text"])(status_code=200, text="")
+        exit = remove_key("token321")
+        self.assertEqual(0, exit)
+
+    @patch("requests.delete")
+    @patch("__builtin__.open")
+    def test_remove_key_should_return_one_on_failure(self, m_open, delete):
+        m_open.return_value = FakeFile("mykey")
+        delete.return_value = namedtuple("Response", ["status_code", "text"])(status_code=500, text="")
+        exit = remove_key("token321")
+        self.assertEqual(1, exit)
 
     @patch("requests.post")
     def test_add_team_should_post_to_right_url(self, post):
@@ -177,6 +236,18 @@ class UserIntegrationTestCase(unittest.TestCase):
         add_team("token321")
         auth_request.assert_called_once_with(ANY, ANY, "token321", data=ANY)
 
+    @patch("requests.post")
+    def test_add_team_should_return_zero_on_success(self, post):
+        post.return_value = namedtuple("Response", ["status_code", "text"])(status_code=200, text="")
+        exit = add_team("token123")
+        self.assertEqual(0, exit)
+
+    @patch("requests.post")
+    def test_add_team_should_return_one_on_failure(self, post):
+        post.return_value = namedtuple("Response", ["status_code", "text"])(status_code=500, text="")
+        exit = add_team("token123")
+        self.assertEqual(1, exit)
+
     @patch("requests.delete")
     def test_remove_team_should_delete_to_right_url(self, delete):
         url = "http://localhost:8080/teams/testteam"
@@ -187,6 +258,18 @@ class UserIntegrationTestCase(unittest.TestCase):
     def test_remove_team_should_call_auth_request(self, auth_request):
         remove_team("token321")
         auth_request.assert_called_once_with(ANY, ANY, "token321")
+
+    @patch("requests.delete")
+    def test_remove_team_should_return_zero_on_success(self, delete):
+        delete.return_value = namedtuple("Response", ["status_code", "text"])(status_code=200, text="")
+        exit = remove_team("token123")
+        self.assertEqual(0, exit)
+
+    @patch("requests.delete")
+    def test_remove_team_should_return_one_on_failure(self, delete):
+        delete.return_value = namedtuple("Response", ["status_code", "text"])(status_code=500, text="")
+        exit = remove_team("token123")
+        self.assertEqual(1, exit)
 
 class FakePost(object):
     def __call__(self, url, headers, **kwargs):
@@ -224,10 +307,40 @@ class DeployTestCase(unittest.TestCase):
         call.assert_called_once_with(["git", "clone", repo, dst])
 
     @patch("subprocess.call")
+    def test_clone_repository_should_return_zero_on_success(self, call):
+        call.return_value = 0
+        repo = "git@github.com/user/repo.git"
+        dst = "/tmp"
+        exit = _clone_repository(repo, dst)
+        self.assertEquals(0, exit)
+
+    @patch("subprocess.call")
+    def test_clone_repository_should_return_one_on_failure(self, call):
+        call.return_value = 1
+        repo = "git@github.com/user/repo.git"
+        dst = "/tmp"
+        exit = _clone_repository(repo, dst)
+        self.assertEquals(1, exit)
+
+    @patch("subprocess.call")
     def test_push_repository_should_call_git_push(self, call):
         remote = "git@git.tsuru.io:user/repo.git"
         _push_repository(remote, "/tmp/repo/.git")
         call.assert_called_once_with(["git", "--git-dir=/tmp/repo/.git", "push", remote, "master"])
+
+    @patch("subprocess.call")
+    def test_push_repository_should_return_zero_on_success(self, call):
+        call.return_value = 0
+        remote = "git@git.tsuru.io:user/repo.git"
+        exit = _push_repository(remote, "/tmp/repo/.git")
+        self.assertEqual(0, exit)
+
+    @patch("subprocess.call")
+    def test_push_repository_should_return_one_on_failure(self, call):
+        call.return_value = 1
+        remote = "git@git.tsuru.io:user/repo.git"
+        exit = _push_repository(remote, "/tmp/repo/.git")
+        self.assertEqual(1, exit)
 
     @patch("subprocess.call")
     def test_deploy_should_call_git_push_with_remote_from_parameter_and_git_dir(self, subp_call):
@@ -247,6 +360,18 @@ class DeployTestCase(unittest.TestCase):
         deploy("git@localhost:integration.git")
         expected = call(["sudo", "rm", "-r", "/tmp/test_app"])
         self.assertEqual(expected, subp_call.call_args_list[2])
+
+    @patch("subprocess.call")
+    def test_deploy_should_return_one_on_any_failure(self, call):
+        call.return_value = 1
+        exit = deploy("git@localhost:integration.git")
+        self.assertEqual(1, exit)
+
+    @patch("subprocess.call")
+    def test_deploy_should_return_zero_when_all_succeed(self, call):
+        call.return_value = 0
+        exit = deploy("git@localhost:integration.git")
+        self.assertEqual(0, exit)
 
 
 if __name__ == "__main__":
