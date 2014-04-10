@@ -1,4 +1,4 @@
-[![Build Status](https://api.travis-ci.org/andrewsmedina/tsuru-integration-tests.png)](https://travis-ci.org/andrewsmedina/tsuru-integration-tests/)
+[![Build Status](https://api.travis-ci.org/tsuru/tsuru-integration-tests.png)](https://travis-ci.org/tsuru/tsuru-integration-tests/)
 
 tsuru-integration-tests
 =======================
