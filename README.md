@@ -1,5 +1,3 @@
-[![Build Status](https://api.travis-ci.org/tsuru/tsuru-integration-tests.png)](https://travis-ci.org/tsuru/tsuru-integration-tests/)
-
 tsuru-integration-tests
 =======================
 
@@ -13,14 +11,9 @@ It is a script to test a simple tsuru workflow:
 Install
 -------
 
-    pip install -r requirements.txt
+    make deps
 
 Running the script
 ------------------
 
-    python integration.py
-
-Running tests of the tests
---------------------------
-
-    python test_integration.py
+    make run

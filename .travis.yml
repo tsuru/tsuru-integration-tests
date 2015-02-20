@@ -1,3 +1,0 @@
-language: python
-install: make test-deps
-script: make test
