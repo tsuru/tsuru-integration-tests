@@ -13,8 +13,25 @@ PASSWORD = "123456"
 TEST_REPOSITORY = "git://github.com/flaviamissi/tsuru-app-sample.git"
 
 
+class Cmd(object):
+
+    def __init__(self, cmd):
+        self.cmd = cmd
+
+    def __getattr__(self, name):
+        def cmd(*args, **kwargs):
+            cmds = [self.cmd, name.replace("_", "-")]
+            cmds.extend(args)
+            return subprocess.call(cmds)
+        return cmd
+
+
+tsuru = Cmd("tsuru")
+git = Cmd("git")
+
+
 def create_app(token):
-    return subprocess.call(["tsuru", "app-create", APP_NAME, "static"])
+    return tsuru.app_create(APP_NAME, "static")
 
 
 def remove_app(token):
@@ -23,14 +40,14 @@ def remove_app(token):
 
 
 def _clone_repository(repository, dst):
-    return subprocess.call(["git", "clone", repository, dst])
+    return git.clone(repository, dst)
 
 
 def deploy(remote):
     app_dir = "/tmp/test_app"
     exits = []
     exits.append(_clone_repository(TEST_REPOSITORY, app_dir))
-    exits.append(subprocess.call(["tsuru", "app-deploy", "-a", APP_NAME, app_dir]))
+    exits.append(tsuru.app_deploy("-a", APP_NAME, app_dir))
     exits.append(subprocess.call(["sudo", "rm", "-r", app_dir]))
     if 1 in exits:
         print("deploy finished with error")
@@ -59,7 +76,8 @@ def remove_user(token):
 
 def add_key(token):
     key_path = os.path.expanduser("~/.ssh/id_rsa.pub")
-    return subprocess.call(["tsuru", "key-add", "{}-key".format(USER), key_path])
+    key = "{}-key".format(USER)
+    return tsuru.key_add(key, key_path)
 
 
 def remove_key(token):
@@ -68,7 +86,7 @@ def remove_key(token):
 
 
 def add_team(token):
-    return subprocess.call(["tsuru", "team-create", "testteam"])
+    return tsuru.team_create("testteam")
 
 
 def remove_team(token):
