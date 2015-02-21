@@ -22,6 +22,7 @@ class Cmd(object):
         def cmd(*args, **kwargs):
             cmds = [self.cmd, name.replace("_", "-")]
             cmds.extend(args)
+            print("\n\nExecuting {}\n******".format(" ".join(cmds)))
             return subprocess.call(cmds)
         return cmd
 
