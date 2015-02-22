@@ -49,7 +49,7 @@ def deploy(remote):
     exits = []
     exits.append(_clone_repository(TEST_REPOSITORY, app_dir))
     exits.append(tsuru.app_deploy("-a", APP_NAME, app_dir))
-    exits.append(subprocess.call(["sudo", "rm", "-r", app_dir]))
+    exits.append(subprocess.call(["rm", "-rf", app_dir]))
     if 1 in exits:
         print("deploy finished with error")
         return 1
@@ -113,9 +113,14 @@ def login():
 
 
 def main():
+    token = os.environ.get("TSURU_TOKEN")
+
     exits = []
-    exits.append(create_user())
-    token = login()
+
+    if not token:
+        exits.append(create_user())
+        token = login()
+
     exits.append(add_team(token))
     exits.append(add_key(token))
     remote = create_app(token)
@@ -124,7 +129,12 @@ def main():
     remove_app(token)
     remove_team(token)
     remove_key(token)
-    remove_user(token)
+
+    token = os.environ.get("TSURU_TOKEN")
+
+    if not token:
+        remove_user(token)
+
     if 1 in exits:
         "Finished with failure!"
         exit(1)
