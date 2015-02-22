@@ -1,4 +1,3 @@
-import json
 import os
 import requests
 import subprocess
@@ -27,7 +26,6 @@ class Cmd(object):
 
 
 tsuru = Cmd("tsuru")
-git = Cmd("git")
 
 
 def create_app(token):
@@ -94,7 +92,7 @@ def remove_team(token):
         )
         output = cmd.communicate("y")[1]
 
-        if not "it have access to apps" in output:
+        if "it have access to apps" not in output:
             return output
 
 
