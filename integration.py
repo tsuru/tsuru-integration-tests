@@ -10,7 +10,6 @@ TSURU_URL = "http://{0}:{1}".format(TSURU_HOST, TSURU_PORT)
 APP_NAME = "integration"
 USER = "tester@globo.com"
 PASSWORD = "123456"
-TEST_REPOSITORY = "git://github.com/flaviamissi/tsuru-app-sample.git"
 
 
 class Cmd(object):
@@ -40,16 +39,10 @@ def remove_app(token):
     return cmd.communicate("y")
 
 
-def _clone_repository(repository, dst):
-    return git.clone(repository, dst)
-
-
 def deploy(remote):
-    app_dir = "/tmp/test_app"
+    app_dir = os.path.abspath("app")
     exits = []
-    exits.append(_clone_repository(TEST_REPOSITORY, app_dir))
     exits.append(tsuru.app_deploy("-a", APP_NAME, app_dir))
-    exits.append(subprocess.call(["rm", "-rf", app_dir]))
     if 1 in exits:
         print("deploy finished with error")
         return 1
