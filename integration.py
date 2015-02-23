@@ -29,7 +29,7 @@ tsuru = Cmd("tsuru")
 
 
 def create_app(token):
-    return tsuru.app_create(APP_NAME, "static")
+    return tsuru.app_create(APP_NAME, "static", "-t", "testteam")
 
 
 def remove_app(token):
