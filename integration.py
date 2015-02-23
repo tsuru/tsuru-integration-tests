@@ -66,17 +66,6 @@ def remove_user(token):
     return cmd.communicate("y")
 
 
-def add_key(token):
-    key_path = os.path.expanduser("~/.ssh/id_rsa.pub")
-    key = "{}-key".format(USER)
-    return tsuru.key_add(key, key_path)
-
-
-def remove_key(token):
-    cmd = subprocess.Popen(["tsuru", "key-remove", "{}-key".format(USER)], stdin=subprocess.PIPE)
-    return cmd.communicate("y")
-
-
 def add_team(token):
     return tsuru.team_create("testteam")
 
@@ -113,13 +102,11 @@ def main():
         token = login()
 
     exits.append(add_team(token))
-    exits.append(add_key(token))
     remote = create_app(token)
     exits.append(deploy(remote))
 
     remove_app(token)
     remove_team(token)
-    remove_key(token)
 
     token = os.environ.get("TSURU_TOKEN")
 
