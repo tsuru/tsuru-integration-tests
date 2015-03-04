@@ -1,3 +1,7 @@
+.PHONY: test deps run test-deps clean
+
+run: test
+
 clean:
 	@find . -name "*.pyc" -delete
 
@@ -7,8 +11,6 @@ test-deps:
 deps:
 	@pip install -r requirements.txt
 
-test: clean test-deps
+test: test-deps
+	@python -m unittest discover
 	@flake8 --max-line-length 110 .
-
-run: clean deps
-	@python integration.py

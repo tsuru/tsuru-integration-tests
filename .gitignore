@@ -36,3 +36,5 @@ nosetests.xml
 
 # ignoring vim swap files
 *.sw[m-z]
+
+tests/gen_fixtures
