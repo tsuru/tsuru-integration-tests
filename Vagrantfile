@@ -37,18 +37,4 @@ Vagrant.configure("2") do |config|
     post_receive.vm.provision :shell, path: "run.bash", args: "post_receive"
   end
 
-  config.vm.define :pre_receive_archive, autostart: false do |pre_receive_archive|
-    pre_receive_archive.vm.network :private_network, ip: "192.168.50.41"
-    pre_receive_archive.vm.provision :shell, path: "run.bash", args: "pre_receive_archive"
-  end
-
-  config.vm.define :pre_receive_swift, autostart: false do |pre_receive_swift|
-    pre_receive_swift.vm.network :private_network, ip: "192.168.50.42"
-    pre_receive_swift.vm.provision :shell, path: "run.bash", args: "pre_receive_swift"
-  end
-
-  config.vm.define :pre_receive_s3, autostart: false do |pre_receive_s3|
-    pre_receive_s3.vm.network :private_network, ip: "192.168.50.43"
-    pre_receive_s3.vm.provision :shell, path: "run.bash", args: "pre_receive_s3"
-  end
 end
