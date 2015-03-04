@@ -1,0 +1,54 @@
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.provider :virtualbox do |vbox, override|
+    vbox.memory = 1024
+    override.vm.box = "ubuntu14.04"
+    override.vm.box_url = "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
+  end
+
+  config.vm.provider :aws do |aws, override|
+    override.vm.box = "dummy"
+    override.vm.box_url = "https://raw.githubusercontent.com/mitchellh/vagrant-aws/master/dummy.box"
+
+    override.ssh.username = "ubuntu"
+    override.ssh.private_key_path = ENV["AWS_PRIVATE_KEY_PATH"]
+
+    aws.access_key_id = ENV["AWS_ACCESS_KEY_ID"]
+    aws.secret_access_key = ENV["AWS_SECRET_ACCESS_KEY"]
+    aws.keypair_name = ENV["AWS_KEYPAIR_NAME"]
+    aws.ami = ENV["AWS_AMI"]
+    aws.region = ENV["AWS_REGION"]
+    aws.instance_ready_timeout = 300
+    aws.block_device_mapping = [{"DeviceName" => "/dev/sda1", "Ebs.VolumeSize" => 60}]
+    aws.tags = {
+      "Name" => "vagrant_integration_test",
+    }
+    aws.user_data = "#!/bin/bash\nperl -i -pe 's/^# *(.+)(trusty|trusty-updates|trusty-security) multiverse$/$1$2 multiverse/gi' /etc/apt/sources.list"
+  end
+
+  config.vm.provider :parallels do |prl, override|
+    prl.memory = 1024
+    override.vm.box = "parallels/ubuntu-14.04"
+  end
+
+  config.vm.define :post_receive, autostart: false do |post_receive|
+    post_receive.vm.network :private_network, ip: "192.168.50.40"
+    post_receive.vm.provision :shell, path: "run.bash", args: "post_receive"
+  end
+
+  config.vm.define :pre_receive_archive, autostart: false do |pre_receive_archive|
+    pre_receive_archive.vm.network :private_network, ip: "192.168.50.41"
+    pre_receive_archive.vm.provision :shell, path: "run.bash", args: "pre_receive_archive"
+  end
+
+  config.vm.define :pre_receive_swift, autostart: false do |pre_receive_swift|
+    pre_receive_swift.vm.network :private_network, ip: "192.168.50.42"
+    pre_receive_swift.vm.provision :shell, path: "run.bash", args: "pre_receive_swift"
+  end
+
+  config.vm.define :pre_receive_s3, autostart: false do |pre_receive_s3|
+    pre_receive_s3.vm.network :private_network, ip: "192.168.50.43"
+    pre_receive_s3.vm.provision :shell, path: "run.bash", args: "pre_receive_s3"
+  end
+end
