@@ -1,14 +1,34 @@
 import unittest
 import re
 import os
+import base64
 
 from tests.utils import tsuru, retry, shell, CmdError
+
+
+def random_name(prefix=''):
+    return "{}{}".format(prefix, base64.b16encode(os.urandom(12))).lower()
 
 
 class BaseTestCase(unittest.TestCase):
 
     @classmethod
+    def tearDownClass(cls):
+        if getattr(cls, 'appname', None):
+            retry(tsuru.app_remove, '-a', cls.appname, '-y', count=1, ignore=r'.*not found.*')
+        if getattr(cls, 'teamname', None):
+            retry(tsuru.team_remove, cls.teamname, stdin='y', count=10, ignore=r'.*not found.*')
+        if getattr(cls, 'username', None):
+            retry(tsuru.user_remove, stdin='y', count=1, ignore=r'.*not found.*')
+
+    @classmethod
     def reset_user(cls):
+        if not getattr(cls, 'username', None):
+            cls.username = '{}@somewhere.com'.format(random_name())
+            cls.password = random_name()
+            cls.appname = random_name('integration-test-app-')
+            cls.teamname = random_name('integration-test-team-')
+            cls.keyname = random_name('integration-test-key-')
         if os.environ.get('TSURU_TOKEN'):
             retry(tsuru.app_remove, '-a', cls.appname, '-y', count=10, ignore=r'.*not found.*')
             retry(tsuru.team_remove, cls.teamname, stdin='y', count=10, ignore=r'.*not found.*')

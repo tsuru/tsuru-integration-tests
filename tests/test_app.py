@@ -4,7 +4,7 @@ import time
 from os.path import join
 
 from tests import BaseTestCase
-from tests.utils import tsuru, retry
+from tests.utils import tsuru
 
 
 class AppTestCase(BaseTestCase):
@@ -22,20 +22,11 @@ class AppTestCase(BaseTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.username = 'tester@globo.com'
-        cls.password = '123456'
-        cls.appname = 'myapp'
-        cls.teamname = 'testteam'
-        cls.keyname = 'mykey'
         cls.reset_user()
         tsuru.app_create(cls.appname, 'python', '-t', cls.teamname)
         base_dir = os.path.dirname(os.path.abspath(__file__))
         app_dir = join(base_dir, '..', 'app')
         tsuru.app_deploy('-a', cls.appname, app_dir)
-
-    @classmethod
-    def tearDownClass(cls):
-        retry(tsuru.app_remove, '-a', cls.appname, '-y', count=1, ignore=r'.*not found.*')
 
     def test_unit_add_remove(self):
         tsuru.unit_add('-a', self.appname, '2')

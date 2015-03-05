@@ -3,24 +3,13 @@ import os
 from os.path import join
 
 from tests import BaseTestCase
-from tests.utils import tsuru, git, shell, retry
+from tests.utils import tsuru, git, shell
 
 
 class CreationAndDeployTestCase(BaseTestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        cls.username = 'tester@globo.com'
-        cls.password = '123456'
-        cls.appname = 'myapp'
-        cls.teamname = 'testteam'
-        cls.keyname = 'mykey'
-
     def setUp(self):
         self.reset_user()
-
-    def tearDown(self):
-        retry(tsuru.app_remove, '-a', self.appname, '-y', count=1, ignore=r'.*not found.*')
 
     def test_create_app(self):
         out, _ = tsuru.app_create(self.appname, 'python', '-t', self.teamname)
