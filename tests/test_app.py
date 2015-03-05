@@ -27,22 +27,15 @@ class AppTestCase(BaseTestCase):
         cls.appname = 'myapp'
         cls.teamname = 'testteam'
         cls.keyname = 'mykey'
-
-        try:
-            tsuru.login(cls.username, stdin=cls.password)
-            retry(tsuru.app_remove, '-a', cls.appname, '-y', count=1, ignore=r'.*not found.*')
-            retry(tsuru.key_remove, cls.keyname, '-y', count=1, ignore=r'.*not found.*')
-            retry(tsuru.team_remove, cls.teamname, stdin='y', count=10, ignore=r'.*not found.*')
-            retry(tsuru.user_remove, stdin='y', count=1, ignore=r'.*not found.*')
-        except Exception as e:
-            print e
-        tsuru.user_create(cls.username, stdin=cls.password + '\n' + cls.password)
-        tsuru.login(cls.username, stdin=cls.password)
-        tsuru.team_create(cls.teamname)
+        cls.reset_user()
         tsuru.app_create(cls.appname, 'python', '-t', cls.teamname)
         base_dir = os.path.dirname(os.path.abspath(__file__))
         app_dir = join(base_dir, '..', 'app')
         tsuru.app_deploy('-a', cls.appname, app_dir)
+
+    @classmethod
+    def tearDownClass(cls):
+        retry(tsuru.app_remove, '-a', cls.appname, '-y', count=1, ignore=r'.*not found.*')
 
     def test_unit_add_remove(self):
         tsuru.unit_add('-a', self.appname, '2')

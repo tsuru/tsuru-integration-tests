@@ -17,17 +17,10 @@ class CreationAndDeployTestCase(BaseTestCase):
         cls.keyname = 'mykey'
 
     def setUp(self):
-        try:
-            tsuru.login(self.username, stdin=self.password)
-            retry(tsuru.app_remove, '-a', self.appname, '-y', count=1, ignore=r'.*not found.*')
-            retry(tsuru.key_remove, self.keyname, '-y', count=1, ignore=r'.*not found.*')
-            retry(tsuru.team_remove, self.teamname, stdin='y', count=10, ignore=r'.*not found.*')
-            retry(tsuru.user_remove, stdin='y', count=1, ignore=r'.*not found.*')
-        except Exception as e:
-            print e
-        tsuru.user_create(self.username, stdin=self.password + '\n' + self.password)
-        tsuru.login(self.username, stdin=self.password)
-        tsuru.team_create(self.teamname)
+        self.reset_user()
+
+    def tearDown(self):
+        retry(tsuru.app_remove, '-a', self.appname, '-y', count=1, ignore=r'.*not found.*')
 
     def test_create_app(self):
         out, _ = tsuru.app_create(self.appname, 'python', '-t', self.teamname)

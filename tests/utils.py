@@ -95,7 +95,7 @@ def retry(func, *args, **kwargs):
                 return True
             if i == count - 1:
                 raise
-            print 'retrying...'
+            print 'retrying due to: {}'.format(value.stderr.strip())
             time.sleep(sleep)
 
 
