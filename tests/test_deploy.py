@@ -35,7 +35,7 @@ class CreationAndDeployTestCase(BaseTestCase):
         shell.ssh_keygen('-t', 'rsa', '-N', '', '-f', join(fix_dir, 'my.key'), stdin='y')
         with open(git_cmd_path, 'w') as f:
             f.write('''#!/bin/bash
-exec /usr/bin/ssh -i {} "$@"
+exec /usr/bin/ssh -o StrictHostKeyChecking=no -i {} "$@"
 '''.format(join(fix_dir, 'my.key')))
         shell.chmod('+x', git_cmd_path)
 
