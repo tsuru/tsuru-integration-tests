@@ -18,7 +18,7 @@ class BaseTestCase(unittest.TestCase):
             retry(tsuru.app_remove, '-a', cls.appname, '-y', count=1, ignore=r'.*not found.*')
         if getattr(cls, 'teamname', None):
             retry(tsuru.team_remove, cls.teamname, stdin='y', count=10, ignore=r'.*not found.*')
-        if getattr(cls, 'username', None):
+        if getattr(cls, 'username', None) and not os.environ.get('TSURU_TOKEN'):
             retry(tsuru.user_remove, stdin='y', count=1, ignore=r'.*not found.*')
 
     @classmethod
