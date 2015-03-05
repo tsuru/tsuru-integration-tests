@@ -1,30 +1,12 @@
-import unittest
 import re
 import os
-import time
-import shutil
 from os.path import join
 
-from tests.utils import tsuru, git, CmdError, shell
+from tests import BaseTestCase
+from tests.utils import tsuru, git, shell, retry
 
 
-def retry(func, *args, **kwargs):
-    count = kwargs.pop('count', 10)
-    sleep = kwargs.pop('sleep', 5)
-    ignore = kwargs.pop('ignore', None)
-    for i in xrange(count):
-        try:
-            return func(*args, **kwargs)
-        except CmdError as value:
-            if ignore and re.match(ignore, value.stderr, re.DOTALL):
-                return True
-            if i == count - 1:
-                raise
-            time.sleep(sleep)
-            print 'retrying...'
-
-
-class IntegrationTestCase(unittest.TestCase):
+class CreationAndDeployTestCase(BaseTestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -58,10 +40,7 @@ class IntegrationTestCase(unittest.TestCase):
         app_dir = join(base_dir, '..', 'app')
         tsuru.app_create(self.appname, 'python', '-t', self.teamname)
         tsuru.app_deploy('-a', self.appname, app_dir)
-        out, _ = tsuru.app_info('-a', self.appname)
-        addr = re.search(r'Address: (.*?)\n', out).group(1)
-        out, _ = retry(shell.curl, '-fsSL', addr)
-        self.assertEqual(out, "Hello World!")
+        self.assert_app_is_up()
 
     def test_app_git_deploy(self):
         base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -81,17 +60,12 @@ exec /usr/bin/ssh -i {} "$@"
         tsuru.key_add(self.keyname, join(fix_dir, 'my.key.pub'))
         out, _ = tsuru.app_create(self.appname, 'python', '-t', self.teamname)
         repo = re.findall(r'project is "(.*)"', out)
-        try:
-            shutil.rmtree(git_dir)
-        except:
-            pass
+        shell.rm('-rf', git_dir)
+
         git.init(app_dir)
         git_in_app = git('--git-dir', git_dir, '--work-tree', app_dir)
         git_in_app.add('-A', app_dir)
         git_in_app.commit('-m', 'first')
         _, err = git_in_app.push(repo[0], 'master', envs={'GIT_SSH': git_cmd_path})
         self.assertRegexpMatches(err, r'\nremote: OK\s*?\n')
-        out, _ = tsuru.app_info('-a', self.appname)
-        addr = re.search(r'Address: (.*?)\n', out).group(1)
-        out, _ = retry(shell.curl, '-fsSL', addr)
-        self.assertEqual(out, "Hello World!")
+        self.assert_app_is_up()

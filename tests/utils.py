@@ -1,13 +1,10 @@
 import os
 import subprocess
+import time
+import re
 
 
 TSURU_TARGET = os.environ.get("TSURU_TARGET", "localhost:8080")
-# TSURU_PORT = os.environ.get("TSURU_PORT", "8080")
-# TSURU_URL = "http://{0}:{1}".format(TSURU_HOST, TSURU_PORT)
-# APP_NAME = "integration"
-# USER = "tester@globo.com"
-# PASSWORD = "123456"
 
 
 class CmdError(Exception):
@@ -84,6 +81,22 @@ class Cmd(object):
 def get_token():
     with open(os.path.expanduser('~/.tsuru_token'), 'r') as f:
         return f.read()
+
+
+def retry(func, *args, **kwargs):
+    count = kwargs.pop('count', 10)
+    sleep = kwargs.pop('sleep', 5)
+    ignore = kwargs.pop('ignore', None)
+    for i in xrange(count):
+        try:
+            return func(*args, **kwargs)
+        except CmdError as value:
+            if ignore and re.match(ignore, value.stderr, re.DOTALL):
+                return True
+            if i == count - 1:
+                raise
+            print 'retrying...'
+            time.sleep(sleep)
 
 
 shell = Cmd('')
