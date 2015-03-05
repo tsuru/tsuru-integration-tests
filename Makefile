@@ -1,4 +1,4 @@
-.PHONY: test deps run test-deps clean
+.PHONY: test run test-deps clean
 
 run: test
 
@@ -7,9 +7,6 @@ clean:
 
 test-deps:
 	@pip install -r test-requirements.txt
-
-deps:
-	@pip install -r requirements.txt
 
 test: test-deps
 	@python -m unittest discover
