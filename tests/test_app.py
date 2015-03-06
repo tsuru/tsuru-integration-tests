@@ -61,3 +61,12 @@ class AppTestCase(BaseTestCase):
         self.assertEqual(len(hosts), 1)
         tsuru.unit_remove('-a', self.appname, '2')
         self.assert_units_len(1, retry=10)
+
+    def test_log(self):
+        out, _ = tsuru.app_log('--lines', '7', '-a', self.appname)
+        parts = out.split('\n')
+        self.assertEqual(len(parts), 8)
+        self.assertEqual(parts[7], "")
+        self.assert_app_is_up()
+        out, _ = tsuru.app_log('--lines', '10', '-a', self.appname)
+        self.assertRegexpMatches(out, r'output to log')
